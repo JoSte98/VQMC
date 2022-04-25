@@ -1,9 +1,11 @@
 
-N = 4
+from VQMC import VQMC
+from harmonic_oscillator import *
 
-list = [[] for i in range(N)]
+##### helium
+# model = VQMC()
+# model.plot_energy()
 
-print(list)
-
-list[1].append(2)
-print(list)
+##### harmonic oscillator
+model = VQMC(num_steps_equilibrate=10000, trial_function=ho_trial, local_energy=ho_local, init_alpha=ho_init_alpha, dimension=ho_dimension)
+model.plot_energy()
