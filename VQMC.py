@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class VQMC:
     """
-    Variational Quantum Markoc Chain class.
+    Variational Quantum Markov Chain class.
     """
 
     def __init__(self, num_walkers=10, max_step_length=0.1, num_steps_equilibrate=10000, trial_function=None,
@@ -67,7 +67,11 @@ class VQMC:
                 return old_state, old_psi_squared
 
     def MC_step(self):
-        for walker in range(len(self.chains)):
+        for walker in range(self.num_walkers):
+            #if walker == 0:
+            #    print(self.old_psi_squared[walker])
+            #    print(self.chains[walker])
+
             new_state, self.old_psi_squared[walker] = \
                 self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker])
             self.chains[walker].append(new_state)
@@ -84,7 +88,7 @@ class VQMC:
                 energy += E
             self.energy.append(energy/self.num_walkers)
 
-            if i > 2000:
+            if i > 4000:
                tot_energy += energy
 
         self.chains = [[self.chains[walker][-1]] for walker in range(self.num_walkers)]
@@ -92,13 +96,13 @@ class VQMC:
         print(self.chains)
         print(self.old_psi_squared)
 
-        print("Total energy: ", tot_energy/((num_steps-2000)*self.num_walkers))
+        print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
 
     def plot_energy(self):
-        for walker in range(self.num_walkers):
-            plt.plot(range(len(self.energy)), self.walker_energy[walker])
+        #for walker in range(self.num_walkers):
+        #    plt.plot(range(len(self.energy)), self.walker_energy[walker])
 
-        #plt.plot(range(len(self.energy)), self.energy)
+        plt.plot(range(len(self.energy)), self.energy)
         plt.show()
 
 
