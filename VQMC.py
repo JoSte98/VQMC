@@ -3,7 +3,9 @@
 """
 
 import numpy as np
-from helium import helium_trial, helium_local, helium_init_alpha, helium_dimension
+from helium import *
+from harmonic_oscillator import *
+from hydrogen import *
 
 import matplotlib.pyplot as plt
 
@@ -12,22 +14,32 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=400, max_step_length=0.1, num_steps_equilibrate=10000, trial_function=None,
-                 local_energy=None, init_alpha=None, dimension=None): #need to include also the derivative function for gradient calculation!!!
-        if trial_function is None:
+    def __init__(self, num_walkers=400, max_step_length=0.5, num_steps_equilibrate=4000, model ="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
+        if model=="Helium":
             self.psi_T = helium_trial
             self.energy_L = helium_local
             self.alpha = helium_init_alpha
             self.dimension = helium_dimension
-        elif ((trial_function is not None) and (local_energy is not None) and (init_alpha is not None) and
-              (dimension is not None)):
-            self.psi_T = trial_function
-            self.energy_L = local_energy
-            self.alpha = init_alpha
-            self.dimension = dimension
+            self.derivation_log_trial = helium_trial_ln_derivation
+        elif model=="Hydrogen":
+            self.psi_T = hydrogen_trial
+            self.energy_L = hydrogen_local
+            self.alpha = hydrogen_init_alpha
+            self.dimension = hydrogen_dimension
+            self.derivation_log_trial = hydrogen_trial_ln_derivation
+        elif model=="LHO":
+            self.psi_T = ho_trial
+            self.energy_L = ho_local
+            self.alpha = ho_init_alpha
+            self.dimension = ho_dimension
+            self.derivation_log_trial = ho_trial_ln_derivation
+
+            
         else:
             print("Check your model inputs!")
             exit(1)
+        if init_alpha!=None:
+            self.alpha=init_alpha
 
         self.num_walkers = num_walkers
         self.chains = [[] for i in range(self.num_walkers)]
@@ -85,6 +97,21 @@ class VQMC:
             self.chains[walker].append(new_state)
 
     def equilibrate(self, num_steps): #NEEDS TO BE REDONE!!!
+    
+        for i in range(num_steps):
+            self.MC_step()
+            
+        #print(self.chains)
+        #print(self.old_psi_squared)
+        print("accepted/tried ratio: ", self.num_accepted/self.num_tried)
+
+        #print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
+        
+    def get_energy_mean_value(self, num_steps):
+        """
+        Initializes the system and calculates the mean value of energy for a current alpha of the system.
+
+        """
         tot_energy=0
         self.walker_energy = [[] for i in range(self.num_walkers)]
         for i in range(num_steps):
@@ -95,24 +122,11 @@ class VQMC:
                 self.walker_energy[walker].append(E)
                 energy += E
             self.energy.append(energy/self.num_walkers)
-
-            if i > 4000:
-               tot_energy += energy
+            tot_energy += energy
 
         self.chains = [[self.chains[walker][-1]] for walker in range(self.num_walkers)]
-
-        print(self.chains)
-        print(self.old_psi_squared)
-        print("accepted/tried ratio: ", self.num_accepted/self.num_tried)
-
-        print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
         
-    def get_energy_mean_value(self, num_steps):
-        """
-        Initializes the system and calculates the mean value of energy for a current alpha of the system.
-
-        """
-        pass
+        return tot_energy/((num_steps)*self.num_walkers)
     
     def save_energy_mean_value(self, name_of_file):
         """
