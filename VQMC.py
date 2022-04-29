@@ -35,6 +35,9 @@ class VQMC:
 
         self.max_step_length = max_step_length
         self.energy = []
+        
+        self.num_tried = 0
+        self.num_accepted = 0
 
         self.equilibrate(num_steps_equilibrate)
 
@@ -52,17 +55,21 @@ class VQMC:
         return 0
 
     def single_walker_step(self, old_state, old_psi_squared):
+        self.num_tried += 1
         displacement = (2*np.random.rand(self.dimension) - 1)*self.max_step_length
         new_state = old_state + displacement
         new_psi_squared = self.psi_T(new_state, self.alpha)**2
 
         p = new_psi_squared/old_psi_squared
         if p >= 1.0:
+            self.num_accepted +=1
             return new_state, new_psi_squared
         else:
             q = np.random.random()
-            if q >= p:
+            if q < p:
+                self.num_accepted +=1
                 return new_state, new_psi_squared
+                
             else:
                 return old_state, old_psi_squared
 
@@ -95,6 +102,7 @@ class VQMC:
 
         print(self.chains)
         print(self.old_psi_squared)
+        print("accepted/tried ratio: ", self.num_accepted/self.num_tried)
 
         print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
 

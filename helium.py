@@ -15,6 +15,6 @@ def helium_local(parameters, alpha):
     return -4 + np.dot((r_hat_1 - r_hat_2),(position_1 - position_2)) * (1/(r12*(1 + alpha*r12)**2)) \
             - 1/(r12*(1 + alpha*r12)**3) - 1/(4*(1 + alpha*r12)**4) + 1/r12
 
-helium_init_alpha = 0.15
+helium_init_alpha = 0.175
 
 helium_dimension = 6
