@@ -12,8 +12,8 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=10, max_step_length=0.1, num_steps_equilibrate=10000, trial_function=None,
-                 local_energy=None, init_alpha=None, dimension=None):
+    def __init__(self, num_walkers=400, max_step_length=0.1, num_steps_equilibrate=10000, trial_function=None,
+                 local_energy=None, init_alpha=None, dimension=None): #need to include also the derivative function for gradient calculation!!!
         if trial_function is None:
             self.psi_T = helium_trial
             self.energy_L = helium_local
@@ -39,7 +39,7 @@ class VQMC:
         self.num_tried = 0
         self.num_accepted = 0
 
-        self.equilibrate(num_steps_equilibrate)
+        self.equilibrate(num_steps_equilibrate) #this probably needs to be moved elsewhere so the code makes more sence!!!
 
 
 
@@ -55,6 +55,7 @@ class VQMC:
         return 0
 
     def single_walker_step(self, old_state, old_psi_squared):
+        
         self.num_tried += 1
         displacement = (2*np.random.rand(self.dimension) - 1)*self.max_step_length
         new_state = old_state + displacement
@@ -83,7 +84,7 @@ class VQMC:
                 self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker])
             self.chains[walker].append(new_state)
 
-    def equilibrate(self, num_steps):
+    def equilibrate(self, num_steps): #NEEDS TO BE REDONE!!!
         tot_energy=0
         self.walker_energy = [[] for i in range(self.num_walkers)]
         for i in range(num_steps):
@@ -105,14 +106,45 @@ class VQMC:
         print("accepted/tried ratio: ", self.num_accepted/self.num_tried)
 
         print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
+        
+    def get_energy_mean_value(self, num_steps):
+        """
+        Initializes the system and calculates the mean value of energy for a current alpha of the system.
 
-    def plot_energy(self):
+        """
+        pass
+    
+    def save_energy_mean_value(self, name_of_file):
+        """
+        Saves mean value of energy and corresponding aplha to a file.
+
+        """
+        pass
+    
+    def optimize(self, max_parameters, step):
+        """
+        Optimization procedure to find the best alpha and corresponding approximate ground energy.
+
+        """
+        pass
+
+    def plot_average_local_energies(self):
+        """
+        Plots the evolution of average local energy of all walkers.
+
+        """
         #for walker in range(self.num_walkers):
         #    plt.plot(range(len(self.energy)), self.walker_energy[walker])
 
         plt.plot(range(len(self.energy)), self.energy)
         plt.show()
+    
+    def plot_energy_mean_values(self):
+        """
+        Plots dependence of mean value of energy on parameters
 
+        """
+        pass
 
 
 
