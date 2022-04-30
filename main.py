@@ -3,12 +3,12 @@
 """
 
 from VQMC import VQMC
+from Optimizer import Optimizer
 
 ##### helium
 model = VQMC()
-E = model.get_energy_mean_value(4000)
-model.plot_average_local_energies()
-print(E)
+optimizer = Optimizer(model)
+optimizer.find_optimum()
 
 ##### harmonic oscillator
 #model = VQMC(num_steps_equilibrate=10000,trial_function=ho_trial, local_energy=ho_local, init_alpha=ho_init_alpha,
