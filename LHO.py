@@ -6,7 +6,7 @@ import numpy as np
 
 class LHO:
     def __init__(self):
-        self.init_alpha = 0.5
+        self.init_alpha = 0.1
         self.dimension = 1
 
     def trial(self, parameters, alpha):

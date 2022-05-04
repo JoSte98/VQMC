@@ -14,7 +14,7 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=100, max_step_length=0.5, num_steps_equilibrate=4000, MC_num_steps=10000, model="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
+    def __init__(self, num_walkers=50, max_step_length=0.5, num_steps_equilibrate=4000, MC_num_steps=10000, model="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
         if model=="Helium":
             model = Helium()
         elif model=="Hydrogen":
@@ -24,7 +24,7 @@ class VQMC:
         else:
             print("Check your model inputs!")
             exit(1)
-
+        
         self.psi_T = model.trial
         self.energy_L = model.local
         self.alpha = model.init_alpha
@@ -135,19 +135,6 @@ class VQMC:
         self.expected_energy = tot_energy/((self.MC_num_steps)*self.num_walkers)
         return 0
     
-    def save_energy_mean_value(self, name_of_file):
-        """
-        Saves mean value of energy and corresponding aplha to a file.
-
-        """
-        pass
-    
-    def optimize(self, max_parameters, step):
-        """
-        Optimization procedure to find the best alpha and corresponding approximate ground energy.
-
-        """
-        pass
 
     def plot_average_local_energies(self):
         """
@@ -159,13 +146,88 @@ class VQMC:
 
         plt.plot(range(len(self.energy)), self.energy)
         plt.show()
+        
+    def get_alpha_energy_dependence(self,stop,steps,start=None,save=True,plot=True):
+        """
+        Returns lists of alpha and corresponding calculated mean energies of the system. Lenght of the list is given by steps, start and stop values given by start and stop.
+
+        """
+        if start == None:
+            alpha_start = self.alpha
+        else:
+            alpha_start = start
+            self.reinitialize(alpha_start)
+        alpha_stop = stop
+        alphas = np.linspace(alpha_start,alpha_stop,steps)
+        mean_energies = np.zeros(steps)
+        for i in range(alphas.size):
+            if i != 0:
+                self.reinitialize(alphas[i])
+                self.get_energy_mean()
+                mean_energies[i]=self.expected_energy
+            else:
+                self.get_energy_mean()
+                mean_energies[i]=self.expected_energy
+        
+        if save==True:
+            self.save_mean_energies(alphas, mean_energies)
+        if plot==True:
+            self.plot_alpha_energy_dependence(alphas, mean_energies)
+                
+        return alphas,mean_energies
     
-    def plot_energy_mean_values(self):
+    def save_mean_energies(self, alphas, mean_energies, name_of_file=None):
+        """
+        
+
+        """
+        if name_of_file==None:
+            name_of_file = "alpha-energy_"+str(alphas[0]).replace(".", "")+"_"+str(alphas[-1]).replace(".", "")+".txt"
+            
+        with open(name_of_file, "a") as file:
+            for i in range(alphas.size):
+                file.write("%f %f\n" % (alphas[i], mean_energies[i]))
+
+        return 0    
+    
+    def load_mean_energies(self,name_of_file):
+        """
+        
+        
+        """
+        alphas = []
+        mean_energies = []
+        with open(name_of_file, "r") as file:
+            lines = file.read().split('\n')
+            del lines[-1]
+
+            for line in lines:
+                alpha, mean = line.split(" ")
+                alphas.append(float(alpha))
+                mean_energies.append(float(mean))
+    
+        return alphas,mean_energies
+    
+    def plot_alpha_energy_dependence(self,alphas,mean_energies):
         """
         Plots dependence of mean value of energy on parameters
 
         """
-        pass
+        fig, ax = plt.subplots()
+        sigmas = np.zeros(alphas.size)
+
+        ax.errorbar(alphas, mean_energies, yerr=sigmas, fmt='ro', label="Measurement")
+
+        ax.set_xlabel(r"Temperature $\tilde{T}$", fontsize=18)
+        ax.set_ylabel(r"Magnetic susceptibility $\chi_M$", fontsize=18)
+
+        ax.legend(loc="best", fontsize=16)
+        ax.grid(visible=True)
+        plt.tight_layout()
+
+        plt.show()
+        
+        return 0
 
 
 
