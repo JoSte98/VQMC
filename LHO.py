@@ -6,7 +6,7 @@ import numpy as np
 
 class LHO:
     def __init__(self):
-        self.init_alpha = 0.1
+        self.init_alpha = 0.3
         self.dimension = 1
 
     def trial(self, parameters, alpha):
@@ -17,7 +17,7 @@ class LHO:
         x = parameters[0]
         return alpha + x**2 * (0.5 - 2*alpha**2)
 
-    def trial_ln_derivation(self, parameters,alpha):
+    def trial_ln_derivation(self, parameters, alpha):
         """
         Calculates the value of the derivation of log(\psi_trial) acording to alpha
         """

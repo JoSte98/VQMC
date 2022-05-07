@@ -14,7 +14,8 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=50, max_step_length=0.5, num_steps_equilibrate=4000, MC_num_steps=10000, model="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
+    def __init__(self, num_walkers=200, max_step_length=0.5, num_steps_equilibrate=4000, MC_num_steps=10000, model="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
+        self.model_name = model
         if model=="Helium":
             model = Helium()
         elif model=="Hydrogen":
@@ -24,7 +25,7 @@ class VQMC:
         else:
             print("Check your model inputs!")
             exit(1)
-        
+
         self.psi_T = model.trial
         self.energy_L = model.local
         self.alpha = model.init_alpha
@@ -113,7 +114,7 @@ class VQMC:
 
         #print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
         
-    def get_energy_mean(self):
+    def energy_mean(self):
         """
         Initializes the system and calculates the mean value of energy for a current alpha of the system.
 
@@ -130,11 +131,14 @@ class VQMC:
             self.energy.append(energy/self.num_walkers)
             tot_energy += energy
 
+        mean_energy_walkers = [np.mean(self.walker_energy[walker]) for walker in range(self.num_walkers)]
+        self.variance = np.var(mean_energy_walkers)
+
         self.chains = [[self.chains[walker][-1]] for walker in range(self.num_walkers)]
 
         self.expected_energy = tot_energy/((self.MC_num_steps)*self.num_walkers)
         return 0
-    
+
 
     def plot_average_local_energies(self):
         """
@@ -147,7 +151,7 @@ class VQMC:
         plt.plot(range(len(self.energy)), self.energy)
         plt.show()
         
-    def get_alpha_energy_dependence(self,stop,steps,start=None,save=True,plot=True):
+    def alpha_energy_dependence(self, stop, steps, start=None, save=True, plot=True):
         """
         Returns lists of alpha and corresponding calculated mean energies of the system. Lenght of the list is given by steps, start and stop values given by start and stop.
 
@@ -160,23 +164,26 @@ class VQMC:
         alpha_stop = stop
         alphas = np.linspace(alpha_start,alpha_stop,steps)
         mean_energies = np.zeros(steps)
+        variances = np.zeros(steps)
         for i in range(alphas.size):
             if i != 0:
                 self.reinitialize(alphas[i])
-                self.get_energy_mean()
-                mean_energies[i]=self.expected_energy
+                self.energy_mean()
+                mean_energies[i] = self.expected_energy
+                variances[i] = self.variance
             else:
-                self.get_energy_mean()
-                mean_energies[i]=self.expected_energy
-        
+                self.energy_mean()
+                mean_energies[i] = self.expected_energy
+                variances[i] = self.variance
+
         if save==True:
-            self.save_mean_energies(alphas, mean_energies)
+            self.save_mean_energies(alphas, mean_energies, variances)
         if plot==True:
-            self.plot_alpha_energy_dependence(alphas, mean_energies)
+            self.plot_alpha_energy_dependence(alphas, mean_energies, variances)
                 
-        return alphas,mean_energies
+        return alphas, mean_energies, variances
     
-    def save_mean_energies(self, alphas, mean_energies, name_of_file=None):
+    def save_mean_energies(self, alphas, mean_energies, variances, name_of_file=None):
         """
         
 
@@ -186,7 +193,7 @@ class VQMC:
             
         with open(name_of_file, "a") as file:
             for i in range(alphas.size):
-                file.write("%f %f\n" % (alphas[i], mean_energies[i]))
+                file.write("%f %f %f\n" % (alphas[i], mean_energies[i], variances[i]))
 
         return 0    
     
@@ -197,29 +204,30 @@ class VQMC:
         """
         alphas = []
         mean_energies = []
+        variances = []
         with open(name_of_file, "r") as file:
             lines = file.read().split('\n')
             del lines[-1]
 
             for line in lines:
-                alpha, mean = line.split(" ")
+                alpha, mean, var = line.split(" ")
                 alphas.append(float(alpha))
                 mean_energies.append(float(mean))
+                variances.append(float(var))
+
+        return alphas, mean_energies, variances
     
-        return alphas,mean_energies
-    
-    def plot_alpha_energy_dependence(self,alphas,mean_energies):
+    def plot_alpha_energy_dependence(self, alphas, mean_energies, variances):
         """
         Plots dependence of mean value of energy on parameters
 
         """
         fig, ax = plt.subplots()
-        sigmas = np.zeros(alphas.size)
 
-        ax.errorbar(alphas, mean_energies, yerr=sigmas, fmt='ro', label="Measurement")
+        ax.errorbar(alphas, mean_energies, yerr=np.sqrt(variances), fmt='ro', label="Measurement")
 
-        ax.set_xlabel(r"Temperature $\tilde{T}$", fontsize=18)
-        ax.set_ylabel(r"Magnetic susceptibility $\chi_M$", fontsize=18)
+        ax.set_xlabel(r"$\alpha$", fontsize=18)
+        ax.set_ylabel(r"Energy", fontsize=18)
 
         ax.legend(loc="best", fontsize=16)
         ax.grid(visible=True)

@@ -5,7 +5,7 @@ import numpy as np
 
 class Hydrogen:
     def __init__(self):
-        self.init_alpha = 1.0
+        self.init_alpha = 1.3
         self.dimension = 3
 
     def trial(self, parameters, alpha):

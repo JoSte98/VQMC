@@ -5,7 +5,7 @@ import numpy as np
 
 class Helium:
     def __init__(self):
-        self.init_alpha = 0.5
+        self.init_alpha = 0.25
         self.dimension = 6
 
     def trial(self, parameters, alpha):
