@@ -7,8 +7,8 @@ from Optimizer import Optimizer
 
 ##### helium
 model = VQMC()
-#model.alpha_energy_dependence(stop=0.5, steps=4, start=0.05)
-optimizer = Optimizer(model, max_steps=10)
+model.alpha_energy_dependence(stop=0.25, steps=9, start=0.05)
+optimizer = Optimizer(model)
 optimizer.find_optimum()
 
 ##### harmonic oscillator

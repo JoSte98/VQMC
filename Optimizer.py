@@ -15,16 +15,15 @@ class Optimizer:
         self.energies = []
         self.variances = []
 
-
     def gradient(self):
         gradient = 0.0
         for walker in range(self.model.num_walkers):
             for parameter in self.model.chains[walker]:
-                gradient += self.model.energy_L(parameter, self.model.alpha) * self.model.derivative_log_trial(parameter,
-                                                                                                               self.model.alpha)
+                gradient += self.model.energy_L(parameter, self.model.alpha) *\
+                            self.model.derivative_log_trial(parameter, self.model.alpha)
                 gradient -= self.model.expected_energy * self.model.derivative_log_trial(parameter, self.model.alpha)
-        gradient *= 2/(self.model.num_walkers * len(self.model.chains[0]))
 
+        gradient *= 2/(self.model.num_walkers * len(self.model.chains[0]))
         return gradient
 
     def update_alpha(self, step):

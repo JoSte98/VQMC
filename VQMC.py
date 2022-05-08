@@ -14,13 +14,14 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=200, max_step_length=0.5, num_steps_equilibrate=4000, MC_num_steps=10000, model="Helium", init_alpha=None): #need to include also the derivative function for gradient calculation!!!
+    def __init__(self, num_walkers=400, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
+                 model="Helium", init_alpha=None):
         self.model_name = model
-        if model=="Helium":
+        if model == "Helium":
             model = Helium()
-        elif model=="Hydrogen":
+        elif model == "Hydrogen":
             model = Hydrogen()
-        elif model=="LHO":
+        elif model == "LHO":
             model = LHO()
         else:
             print("Check your model inputs!")
@@ -32,8 +33,8 @@ class VQMC:
         self.dimension = model.dimension
         self.derivative_log_trial = model.trial_ln_derivation
 
-        if init_alpha!=None:
-            self.alpha=init_alpha
+        if init_alpha is not None:
+            self.alpha = init_alpha
 
         self.num_walkers = num_walkers
         self.chains = [[] for i in range(self.num_walkers)]
@@ -110,7 +111,6 @@ class VQMC:
             
         #print(self.chains)
         #print(self.old_psi_squared)
-        #print("accepted/tried ratio: ", self.num_accepted/self.num_tried)
 
         #print("Total energy: ", tot_energy/((num_steps-4000)*self.num_walkers))
         
@@ -131,6 +131,8 @@ class VQMC:
             self.energy.append(energy/self.num_walkers)
             tot_energy += energy
 
+        print("accepted/tried ratio: ", self.num_accepted / self.num_tried)
+
         mean_energy_walkers = [np.mean(self.walker_energy[walker]) for walker in range(self.num_walkers)]
         self.variance = np.var(mean_energy_walkers)
 
@@ -138,7 +140,6 @@ class VQMC:
 
         self.expected_energy = tot_energy/((self.MC_num_steps)*self.num_walkers)
         return 0
-
 
     def plot_average_local_energies(self):
         """
@@ -162,7 +163,7 @@ class VQMC:
             alpha_start = start
             self.reinitialize(alpha_start)
         alpha_stop = stop
-        alphas = np.linspace(alpha_start,alpha_stop,steps)
+        alphas = np.linspace(alpha_start, alpha_stop, steps)
         mean_energies = np.zeros(steps)
         variances = np.zeros(steps)
         for i in range(alphas.size):
@@ -176,9 +177,9 @@ class VQMC:
                 mean_energies[i] = self.expected_energy
                 variances[i] = self.variance
 
-        if save==True:
+        if save:
             self.save_mean_energies(alphas, mean_energies, variances)
-        if plot==True:
+        if plot:
             self.plot_alpha_energy_dependence(alphas, mean_energies, variances)
                 
         return alphas, mean_energies, variances
