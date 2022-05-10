@@ -1,4 +1,4 @@
-"""
+""" Variational Quantum Markov Chain class.
 @author: Magdalena and Johannes
 """
 
@@ -16,6 +16,17 @@ class VQMC:
 
     def __init__(self, num_walkers=40, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
                  model="Helium", init_alpha=None):
+        """
+            Constructor of Variational Quantum Markov Chain class.
+
+            :param num_walkers: Number of individual walkers in Markov Chain.
+            :param max_step_length: Maximal step length a walker can take in each dimension.
+            :param num_steps_equilibrate: Number of Markov steps to take for equilibration.
+            :param MC_num_steps: Number of Markov steps to take after equilibration to construct measurements.
+            :param model: Model (class) which Quantum Markov Chain is performed on,
+             including local energy, trial func., etc.
+            :param init_alpha: Variational parameter (float or np.array, depending on model)
+        """
         self.model_name = model
         if model == "Helium":
             model = Helium()
@@ -55,12 +66,11 @@ class VQMC:
 
     def reinitialize(self, alpha):
         """
-        Reinitializes the whole system for a different variational parameter alpha.
+        Reinitialize the whole system for a different variational parameter alpha.
         
         :param alpha: (float or np.array) new variational parameter alpha
         
         return: 0 is successful.
-
         """
         self.alpha = alpha
 
@@ -78,10 +88,10 @@ class VQMC:
 
     def initialize_walkers(self):
         """
-        Assigns random initial positions of all walkers. The random positions are drawn from Maxwellian distribution function centered at 0.
+        Assigns random initial positions of all walkers. The random positions are drawn from Maxwellian distribution
+         function centered at 0.
 
         return: 0 if successful.
-
         """
         np.random.seed(42)
         init = np.random.normal(loc=0, scale=10, size=(self.num_walkers,self.dimension))
@@ -94,13 +104,13 @@ class VQMC:
 
     def single_walker_step(self, old_state, old_psi_squared):
         """
-        Proposes a new possition of the walker and based on Metropolis algorithm either accepts and jumps or stays at the original location.
+        Proposes a new position of the walker and based on Metropolis algorithm either accepts and jumps or stays at the
+        original location.
 
         :param old_state: Old state of the walker.
-        :param old_psi_squared: Correesponding squared trial function value for the old state.
+        :param old_psi_squared: Corresponding squared trial function value for the old state.
             
         return: Current location of the walker and corresponding squared trial function value.
-
         """
         
         self.num_tried += 1
@@ -126,7 +136,6 @@ class VQMC:
         Attempts to shift all the walkers in the model to the next position.
         
         return: 0 if successful.
-        
         """
         for walker in range(self.num_walkers):
             new_state, self.old_psi_squared[walker] = \
@@ -136,12 +145,12 @@ class VQMC:
 
     def equilibrate(self, num_steps): 
         """
-        Gives all walkers a possibility to move num_steps times at the beginning of the simulation in order to equilibrate the model.
+        Gives all walkers a possibility to move num_steps times at the beginning of the simulation in order to equilibrate
+        the model.
         
-        :param num_steps: (int) Number of attepmts to move each walker.
+        :param num_steps: (int) Number of attempts to move each walker.
         
         return: 0 if successful.
-        
         """
     
         for i in range(num_steps):
@@ -154,9 +163,8 @@ class VQMC:
         Initializes the system and calculates the mean value of energy for a current alpha of the system.
         
         return: 0 if successful.
-
         """
-        tot_energy=0
+        tot_energy = 0
         self.walker_energy = [[] for i in range(self.num_walkers)]
         for i in range(self.MC_num_steps):
             self.MC_step()
@@ -176,6 +184,7 @@ class VQMC:
         self.chains = [[self.chains[walker][-1]] for walker in range(self.num_walkers)]
 
         self.expected_energy = tot_energy/((self.MC_num_steps)*self.num_walkers)
+
         return 0
 
     def plot_average_local_energies(self):
@@ -183,7 +192,6 @@ class VQMC:
         Plots the evolution of average local energy of all walkers.
         
         return: 0 if successful.
-
         """
 
         plt.plot(range(len(self.energy)), self.energy)
@@ -192,17 +200,18 @@ class VQMC:
         
     def alpha_energy_dependence(self, stop, steps, start=None, save=True, plot=True):
         """
-        Returns lists of alpha and corresponding calculated mean energies of the system. Lenght of the list is given by steps, start and stop values given by start and stop.
-        Through save and plot parameters gives option to save the values in a file or to plot the dependence.
-        
-        :param start: [optional, initial value = None] (float or None) Start value of alphas, if None -> takes start value as current alpha of the model, otherwise takes given start value.
+        Returns lists of alpha and corresponding calculated mean energies of the system.
+
         :param stop: (float) Maximum value of parameter alpha.
         :param steps: (float) Number of alphas in the interval [start,stop] for which measurement of energy will be done.
-        :param save: [optional, initial value = True](True/False) Allows saving of the measured alpha-energy dependence to a file if True.
-        :param plot: [optional, initial value = True](True/False) Allows plotting of the measured alpha-energy dependence if True.
+        :param start: [optional, initial value = None] (float or None) Start value of alphas, if None -> takes start
+         value as current alpha of the model, otherwise takes given start value.
+        :param save: [optional, initial value = True](True/False) Allows saving of the measured alpha-energy dependence
+         to a file if True.
+        :param plot: [optional, initial value = True](True/False) Allows plotting of the measured alpha-energy
+         dependence if True.
             
-        return: Lists of variational parameters alpha, meand energies and their variances.
-
+        return: Lists of variational parameters alpha, mean energies and their variances.
         """
         if start == None:
             alpha_start = self.alpha
@@ -233,7 +242,8 @@ class VQMC:
     
     def save_mean_energies(self, alphas, mean_energies, variances, name_of_file=None):
         """
-        Saves the lists of alphas, mean energies and their variances into a file in the style (alpha mean_energy variance)
+        Saves the lists of alphas, mean energies and their variances into a file in the style
+        (alpha mean_energy variance)
         
         :param alphas: (list of floats) List of variational parameters alpha.
         :param mean_energies: (list of floats) List of measured mean energies for given aplhas.
@@ -258,7 +268,7 @@ class VQMC:
         
         :param name_of_file: Name of the file.
         
-        return: Lists of variational parameters alpha, meand energies and their variances.
+        return: Lists of variational parameters alpha, mean energies and their variances.
         """
         alphas = []
         mean_energies = []
@@ -282,7 +292,6 @@ class VQMC:
         :param alphas: (list of floats) List of variational parameters alpha.
         :param mean_energies: (list of floats) List of measured mean energies for given aplhas.
         :param variances: (list of floats) List of corresponding variances of mean energies.
-        
 
         return: 0 if successful.
         """

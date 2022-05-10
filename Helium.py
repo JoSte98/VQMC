@@ -1,20 +1,43 @@
-"""
+""" Model class for Helium variational ansatz.
 @author: Magdalena and Johannes
 """
+
 import numpy as np
 
 class Helium:
+    """
+    Model class for Hydrogen variational ansatz.
+    """
     def __init__(self):
+        """
+        Constructor of Model class for Hydrogen variational ansatz.
+        """
         self.init_alpha = 0.25
         self.dimension = 6
 
     def trial(self, parameters, alpha):
+        """
+        Trial function for 2 electrons wave function in Helium atom.
+
+        :param parameters: (np.array [6x1]) 3d positions of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of trial function at electron positions.
+        """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
         r12 = np.linalg.norm(position_1-position_2)
         return np.exp(-2*np.linalg.norm(position_1) - 2*np.linalg.norm(position_2) + r12/(2*(1 + alpha*r12)))
 
     def local(self, parameters, alpha):
+        """
+        Local energy of Helium ansatz.
+
+        :param parameters: (np.array [6x1]) 3d position of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Local energy at electron positions.
+        """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
         r_hat_1 = position_1/np.linalg.norm(position_1)
@@ -25,15 +48,27 @@ class Helium:
 
     def trial_ln_derivative(self, parameters,alpha):
         """
-        Calculates the value of the derivation of log(\psi_trial) acording to alpha
+        Calculates the value of the derivative of log(trial) according to alpha.
+
+        :param parameters: (np.array [6x1]) 3d position of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of d/(d alpha) log(trial) at electron positions.
         """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
         r12 = np.linalg.norm(position_1-position_2)
         return - r12**2 / (2*(1+alpha*r12)**2)
     
-    def trial_ln_2nd_derivative(self,parameters,alpha):
-        
+    def trial_ln_2nd_derivative(self, parameters, alpha):
+        """
+        Calculates the value of the 2nd derivative of log(trial) according to alpha.
+
+        :param parameters: (np.array [6x1]) 3d position of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of d^2/(d alpha^2) log(trial) at electron positions (here: independent of alpha and r).
+        """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
         r12 = np.linalg.norm(position_1-position_2)
