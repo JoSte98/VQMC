@@ -14,7 +14,7 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=400, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
+    def __init__(self, num_walkers=40, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
                  model="Helium", init_alpha=None):
         self.model_name = model
         if model == "Helium":
@@ -29,9 +29,11 @@ class VQMC:
 
         self.psi_T = model.trial
         self.energy_L = model.local
+        self.energy_L_derivative = model.local_derivative
         self.alpha = model.init_alpha
         self.dimension = model.dimension
-        self.derivative_log_trial = model.trial_ln_derivation
+        self.derivative_log_trial = model.trial_ln_derivative
+        self.derivative_2nd_log_trial = model.trial_ln_2nd_derivative
 
         if init_alpha is not None:
             self.alpha = init_alpha

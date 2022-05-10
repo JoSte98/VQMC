@@ -23,6 +23,14 @@ class Hydrogen:
         """
         r = np.linalg.norm(parameters)
         return -r
+    
+    def trial_ln_2nd_derivative(self,parameters,alpha):
+        
+        return 0.0
+    
+    def local_derivative(self,parameters,alpha):
+        r = np.linalg.norm(parameters)
+        return - alpha + 1/r
 
 
 

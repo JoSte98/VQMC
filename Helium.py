@@ -23,7 +23,7 @@ class Helium:
         return -4 + np.dot((r_hat_1 - r_hat_2),(position_1 - position_2)) * (1/(r12*(1 + alpha*r12)**2)) \
                 - 1/(r12*(1 + alpha*r12)**3) - 1/(4*(1 + alpha*r12)**4) + 1/r12
 
-    def trial_ln_derivation(self, parameters,alpha):
+    def trial_ln_derivative(self, parameters,alpha):
         """
         Calculates the value of the derivation of log(\psi_trial) acording to alpha
         """
@@ -31,3 +31,20 @@ class Helium:
         position_2 = parameters[3:]
         r12 = np.linalg.norm(position_1-position_2)
         return - r12**2 / (2*(1+alpha*r12)**2)
+    
+    def trial_ln_2nd_derivative(self,parameters,alpha):
+        
+        position_1 = parameters[:3]
+        position_2 = parameters[3:]
+        r12 = np.linalg.norm(position_1-position_2)
+        return r12**3 / ((1+alpha*r12)**3)
+    
+    def local_derivative(self,parameters,alpha):
+
+        position_1 = parameters[:3]
+        position_2 = parameters[3:]
+        r_hat_1 = position_1/np.linalg.norm(position_1)
+        r_hat_2 = position_2/np.linalg.norm(position_2)
+        r12 = np.linalg.norm(position_1 - position_2)
+        return -2 * np.dot((r_hat_1 - r_hat_2),(position_1 - position_2)) * (1/((1 + alpha*r12)**3)) \
+                + 3/((1 + alpha*r12)**4) - r12/((1 + alpha*r12)**5)

@@ -17,9 +17,18 @@ class LHO:
         x = parameters[0]
         return alpha + x**2 * (0.5 - 2*alpha**2)
 
-    def trial_ln_derivation(self, parameters, alpha):
+    def trial_ln_derivative(self, parameters, alpha):
         """
         Calculates the value of the derivation of log(\psi_trial) acording to alpha
         """
         x = parameters[0]
         return -x**2
+    
+    def trial_ln_2nd_derivative(self,parameters,alpha):
+        
+        return 0.0
+    
+    def local_derivative(self,parameters,alpha):
+        
+        x = parameters[0]
+        return -4 * x**2 * alpha

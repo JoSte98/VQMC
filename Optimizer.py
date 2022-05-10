@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class Optimizer:
-    def __init__(self, model, max_steplength=0.3, max_steps=50, criterion=1e-3):
+    def __init__(self, model, max_steplength=0.3, max_steps=50, criterion=1e-6, gradient_method = "1st derivative"):
         self.max_steplength = max_steplength
         self.max_steps = max_steps
         self.model = model
@@ -14,24 +14,60 @@ class Optimizer:
         self.alphas = [self.model.alpha]
         self.energies = []
         self.variances = []
+        self.gradient_method = gradient_method
 
     def gradient(self):
+        gradient11 = 0.0
+        gradient12 = 0.0
+        gradient21= 0.0
+        gradient22= 0.0
+        gradient23= 0.0
+        gradient24= 0.0
+        gradient25= 0.0
         gradient = 0.0
-        for walker in range(self.model.num_walkers):
-            for parameter in self.model.chains[walker]:
-                gradient += self.model.energy_L(parameter, self.model.alpha) *\
-                            self.model.derivative_log_trial(parameter, self.model.alpha)
-                gradient -= self.model.expected_energy * self.model.derivative_log_trial(parameter, self.model.alpha)
+        
+        if self.gradient_method=="1st derivative":
+            for walker in range(self.model.num_walkers):
+                for parameter in self.model.chains[walker]:
+                    E_L = self.model.energy_L(parameter, self.model.alpha)
+                    log_der1 = self.model.derivative_log_trial(parameter, self.model.alpha)
+                    gradient11 += E_L *log_der1
+                    gradient12 += log_der1
 
-        gradient *= 2/(self.model.num_walkers * len(self.model.chains[0]))
+            gradient = 2/(self.model.num_walkers * len(self.model.chains[0])) * (gradient11 - self.model.expected_energy * gradient12)
+            
+        elif self.gradient_method=="2nd derivative":
+            ### carefull, here so far done only for 1 parameter alpha!!!!! For Lithium must be changed!!! (b will be a vector and H will be a matrix)
+            for walker in range(self.model.num_walkers):
+                for parameter in self.model.chains[walker]:
+                    E_L = self.model.energy_L(parameter, self.model.alpha)
+                    log_der1 = self.model.derivative_log_trial(parameter, self.model.alpha)
+                    log_der2 = self.model.derivative_2nd_log_trial(parameter, self.model.alpha)
+                    der_E_L = self.model.energy_L_derivative(parameter, self.model.alpha)
+                    gradient11 += E_L *log_der1
+                    gradient12 += log_der1
+                    gradient21 += E_L * log_der2
+                    gradient22 += log_der2
+                    gradient23 += E_L * log_der1**2
+                    gradient24 += log_der1**2
+                    gradient25 += log_der1 * der_E_L
+                    
+            b = 2/(self.model.num_walkers * len(self.model.chains[0])) * (gradient11 - self.model.expected_energy * gradient12)
+            H = 2/(self.model.num_walkers * len(self.model.chains[0])) * (gradient21 - self.model.expected_energy*gradient22 + 2*(gradient23-self.model.expected_energy*gradient24)-2*b*gradient12+gradient25)
+            gradient = b/H           
         return gradient
 
     def update_alpha(self, step):
         self.model.energy_mean()
         self.energies.append(self.model.expected_energy)
         self.variances.append(self.model.variance)
-
-        new_alpha = self.alphas[-1] - (self.max_steplength/(0+1)) * self.gradient()
+        
+        if self.gradient_method=="1st derivative":
+            new_alpha = self.alphas[-1] - (self.max_steplength/(0+1)) * self.gradient()
+        elif self.gradient_method=="2nd derivative":
+            new_alpha = self.alphas[-1] - self.gradient()
+        else:
+            print("Gradient method undefined!")
 
         self.alphas.append(new_alpha)
 
@@ -48,7 +84,10 @@ class Optimizer:
             print("Variance:", self.variances[step])
             if (np.abs(self.alphas[-1] - self.alphas[-2]) < self.criterion):
                 break
-
+            
+        self.min_E = min(self.energies)
+        self.min_alpha = self.alphas[self.energies.index(self.min_E)]
+        
         if save:
             self.save_mean_energies()
         if plot:
