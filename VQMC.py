@@ -14,7 +14,7 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=200, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
+    def __init__(self, num_walkers=400, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
                  model="Helium", init_alpha=None):
         """
             Constructor of Variational Quantum Markov Chain class.
@@ -94,7 +94,7 @@ class VQMC:
         return: 0 if successful.
         """
         np.random.seed(42)
-        init = np.random.normal(loc=0, scale=10, size=(self.num_walkers,self.dimension))
+        init = np.random.normal(loc=0, scale=2, size=(self.num_walkers,self.dimension))
         self.old_psi_squared = []
         for walker in range(self.num_walkers):
             self.chains[walker].append(init[walker, :])
