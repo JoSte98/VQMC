@@ -9,7 +9,7 @@ class Optimizer:
     """
     Optimization class for the Variational Quantum Markov Chain.
     """
-    def __init__(self, model, steplength=0.3, max_steps=50, criterion=1e-6, gradient_method = "1st derivative"):
+    def __init__(self, model, steplength=0.3, max_steps=50, criterion=1e-6, gradient_method="1st derivative"):
         """
             Constructor for the Optimization class for the Variational Quantum Markov Chain.
 

@@ -12,7 +12,7 @@ class Hydrogen:
         """
         Constructor of Model class for Hydrogen variational ansatz.
         """
-        self.init_alpha = 1.3
+        self.init_alpha = 1.2
         self.dimension = 3
 
     def trial(self, parameters, alpha):

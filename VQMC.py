@@ -14,7 +14,7 @@ class VQMC:
     Variational Quantum Markov Chain class.
     """
 
-    def __init__(self, num_walkers=40, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
+    def __init__(self, num_walkers=200, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
                  model="Helium", init_alpha=None):
         """
             Constructor of Variational Quantum Markov Chain class.
