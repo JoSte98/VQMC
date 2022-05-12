@@ -118,7 +118,10 @@ class VQMC:
         new_state = old_state + displacement
         new_psi_squared = self.psi_T(new_state, self.alpha)**2
 
-        p = new_psi_squared/old_psi_squared
+        if old_psi_squared!=0.0:        
+            p = new_psi_squared/old_psi_squared
+        else:
+            p=1.0
         if p >= 1.0:
             self.num_accepted +=1
             return new_state, new_psi_squared
