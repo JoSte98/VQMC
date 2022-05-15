@@ -83,3 +83,15 @@ class Helium:
         r12 = np.linalg.norm(position_1 - position_2)
         return -2 * np.dot((r_hat_1 - r_hat_2),(position_1 - position_2)) * (1/((1 + alpha*r12)**3)) \
                 + 3/((1 + alpha*r12)**4) - r12/((1 + alpha*r12)**5)
+                
+    def force(self, parameters, alpha):
+        position_1 = parameters[:3]
+        position_2 = parameters[3:]
+        r_1 = np.linalg.norm(position_1)
+        r_2 = np.linalg.norm(position_2)
+        position_12 = position_1 - position_2
+        r12 = np.linalg.norm(position_1 - position_2)
+        F = np.zeros(6)
+        F[:3] = (-2*position_1/r_1 + alpha*position_12/(1+alpha*r12)/r12)
+        F[3:] = (-2*position_2/r_2 - alpha*position_12/(1+alpha*r12)/r12)
+        return 2*F

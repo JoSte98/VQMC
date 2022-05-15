@@ -15,17 +15,18 @@ class VQMC:
     """
 
     def __init__(self, num_walkers=400, max_step_length=0.6, num_steps_equilibrate=4000, MC_num_steps=10000,
-                 model="Helium", init_alpha=None):
+                 model="Helium", init_alpha=None, Focker_Planck = False):
         """
             Constructor of Variational Quantum Markov Chain class.
 
-            :param num_walkers: Number of individual walkers in Markov Chain.
-            :param max_step_length: Maximal step length a walker can take in each dimension.
-            :param num_steps_equilibrate: Number of Markov steps to take for equilibration.
-            :param MC_num_steps: Number of Markov steps to take after equilibration to construct measurements.
-            :param model: Model (class) which Quantum Markov Chain is performed on,
+            :param num_walkers: (int) Number of individual walkers in Markov Chain.
+            :param max_step_length: (float) Maximal step length a walker can take in each dimension.
+            :param num_steps_equilibrate: (int) Number of Markov steps to take for equilibration.
+            :param MC_num_steps: (int) Number of Markov steps to take after equilibration to construct measurements.
+            :param model: (string) Model (class) which Quantum Markov Chain is performed on,
              including local energy, trial func., etc.
             :param init_alpha: Variational parameter (float or np.array, depending on model)
+            :param Focker_Planck: (True/False) Option to use Focker-Planck equation inspired random walk.
         """
         self.model_name = model
         if model == "Helium":
@@ -45,6 +46,10 @@ class VQMC:
         self.dimension = model.dimension
         self.derivative_log_trial = model.trial_ln_derivative
         self.derivative_2nd_log_trial = model.trial_ln_2nd_derivative
+        
+        self.Focker_Planck = Focker_Planck
+        if self.Focker_Planck==True:
+            self.force = model.force
 
         if init_alpha is not None:
             self.alpha = init_alpha
@@ -96,13 +101,21 @@ class VQMC:
         np.random.seed(42)
         init = np.random.normal(loc=0, scale=2, size=(self.num_walkers,self.dimension))
         self.old_psi_squared = []
+        
+        if self.Focker_Planck==True:
+            self.old_force = []
+            
         for walker in range(self.num_walkers):
             self.chains[walker].append(init[walker, :])
             self.old_psi_squared.append(self.psi_T(init[walker, :], self.alpha)**2)
+            
+            if self.Focker_Planck==True:
+                self.old_force.append(self.force(init[walker, :], self.alpha))
+            
 
         return 0
 
-    def single_walker_step(self, old_state, old_psi_squared):
+    def single_walker_step(self, old_state, old_psi_squared, old_force = None):
         """
         Proposes a new position of the walker and based on Metropolis algorithm either accepts and jumps or stays at the
         original location.
@@ -114,25 +127,48 @@ class VQMC:
         """
         
         self.num_tried += 1
-        displacement = (2*np.random.rand(self.dimension) - 1)*self.max_step_length
-        new_state = old_state + displacement
-        new_psi_squared = self.psi_T(new_state, self.alpha)**2
-
-        if old_psi_squared!=0.0:        
-            p = new_psi_squared/old_psi_squared
-        else:
-            p=1.0
-        if p >= 1.0:
-            self.num_accepted +=1
-            return new_state, new_psi_squared
-        else:
-            q = np.random.random()
-            if q < p:
+        if self.Focker_Planck==False:
+            displacement = (2*np.random.rand(self.dimension) - 1)*self.max_step_length
+            new_state = old_state + displacement
+            new_psi_squared = self.psi_T(new_state, self.alpha)**2
+            if old_psi_squared!=0.0:
+                p = new_psi_squared/old_psi_squared
+            else:
+                p=1.0
+            if p >= 1.0:
                 self.num_accepted +=1
                 return new_state, new_psi_squared
+            else:
+                q = np.random.random()
+                if q < p:
+                    self.num_accepted +=1
+                    return new_state, new_psi_squared
+                else:
+                    return old_state, old_psi_squared
+            
+            
+        else:
+            displacement = np.random.normal(loc=0.0, scale = 1, size=self.dimension) * np.sqrt(self.max_step_length) + old_force *  self.max_step_length/2
+            new_state = old_state + displacement
+            new_psi_squared = self.psi_T(new_state, self.alpha)**2
+            new_force = self.force(new_state, self.alpha)
+            if old_psi_squared!=0.0:
+                exponent = - np.linalg.norm(new_state - old_state - self.max_step_length * old_force/2 )**2 + np.linalg.norm(old_state - new_state - self.max_step_length * new_force/2 )**2
+                p = new_psi_squared/old_psi_squared * np.exp(-exponent/(2*self.max_step_length))
                 
             else:
-                return old_state, old_psi_squared
+                p=1.0
+            if p >= 1.0:
+                self.num_accepted +=1
+                return new_state, new_psi_squared, new_force
+            else:
+                q = np.random.random()
+                if q < p:
+                    self.num_accepted +=1
+                    return new_state, new_psi_squared, new_force
+                else:
+                    return old_state, old_psi_squared, old_force
+            
 
     def MC_step(self):
         """
@@ -140,10 +176,16 @@ class VQMC:
         
         return: 0 if successful.
         """
-        for walker in range(self.num_walkers):
-            new_state, self.old_psi_squared[walker] = \
-                self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker])
-            self.chains[walker].append(new_state)
+        if self.Focker_Planck==False:
+            for walker in range(self.num_walkers):
+                new_state, self.old_psi_squared[walker] = \
+                    self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker])
+                self.chains[walker].append(new_state)
+        else:
+            for walker in range(self.num_walkers):
+                new_state, self.old_psi_squared[walker], self.old_force[walker] = \
+                    self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker], old_force = self.old_force[walker])
+                self.chains[walker].append(new_state)
         return 0
 
     def equilibrate(self, num_steps): 

@@ -67,3 +67,8 @@ class LHO:
         
         x = parameters[0]
         return -4 * x**2 * alpha
+    
+    def force(self, parameters, alpha):
+        x = parameters[0]
+        return -4 * x * alpha
+        

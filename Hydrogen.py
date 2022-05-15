@@ -66,6 +66,10 @@ class Hydrogen:
     def local_derivative(self, parameters, alpha):
         r = np.linalg.norm(parameters)
         return - alpha + 1/r
+    
+    def force(self, parameters, alpha):
+        r = np.linalg.norm(parameters)
+        return - parameters * alpha/r
 
 
 
