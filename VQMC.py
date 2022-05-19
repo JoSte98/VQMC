@@ -48,7 +48,7 @@ class VQMC:
         self.derivative_2nd_log_trial = model.trial_ln_2nd_derivative
         
         self.Focker_Planck = Focker_Planck
-        if self.Focker_Planck==True:
+        if self.Focker_Planck == True:
             self.force = model.force
 
         if init_alpha is not None:
@@ -115,7 +115,7 @@ class VQMC:
 
         return 0
 
-    def single_walker_step(self, old_state, old_psi_squared, old_force = None):
+    def single_walker_step(self, old_state, old_psi_squared, old_force=None):
         """
         Proposes a new position of the walker and based on Metropolis algorithm either accepts and jumps or stays at the
         original location.
@@ -134,21 +134,21 @@ class VQMC:
             if old_psi_squared!=0.0:
                 p = new_psi_squared/old_psi_squared
             else:
-                p=1.0
+                p = 1.0
             if p >= 1.0:
-                self.num_accepted +=1
+                self.num_accepted += 1
                 return new_state, new_psi_squared
             else:
                 q = np.random.random()
                 if q < p:
-                    self.num_accepted +=1
+                    self.num_accepted += 1
                     return new_state, new_psi_squared
                 else:
                     return old_state, old_psi_squared
             
             
         else:
-            displacement = np.random.normal(loc=0.0, scale = 1, size=self.dimension) * np.sqrt(self.max_step_length) + old_force *  self.max_step_length/2
+            displacement = np.random.normal(loc=0.0, scale=1, size=self.dimension) * np.sqrt(self.max_step_length) + old_force *  self.max_step_length/2
             new_state = old_state + displacement
             new_psi_squared = self.psi_T(new_state, self.alpha)**2
             new_force = self.force(new_state, self.alpha)
@@ -184,7 +184,8 @@ class VQMC:
         else:
             for walker in range(self.num_walkers):
                 new_state, self.old_psi_squared[walker], self.old_force[walker] = \
-                    self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker], old_force = self.old_force[walker])
+                    self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker],
+                                            old_force=self.old_force[walker])
                 self.chains[walker].append(new_state)
         return 0
 
@@ -225,6 +226,8 @@ class VQMC:
 
         mean_energy_walkers = [np.mean(self.walker_energy[walker]) for walker in range(self.num_walkers)]
         self.variance = np.var(mean_energy_walkers)
+        self.uncertainty_energy = np.mean([np.var(self.walker_energy[walker]) for walker in range(self.num_walkers)])
+        self.uncertainty_energy_var = np.var([np.var(self.walker_energy[walker]) for walker in range(self.num_walkers)])
 
         self.chains = [[self.chains[walker][-1]] for walker in range(self.num_walkers)]
 
@@ -267,25 +270,32 @@ class VQMC:
         alphas = np.linspace(alpha_start, alpha_stop, steps)
         mean_energies = np.zeros(steps)
         variances = np.zeros(steps)
+        uncertainty = np.zeros(steps)
+        uncertainty_var = np.zeros(steps)
         for i in range(alphas.size):
             if i != 0:
                 self.reinitialize(alphas[i])
                 self.energy_mean()
                 mean_energies[i] = self.expected_energy
                 variances[i] = self.variance
+                uncertainty[i] = self.uncertainty_energy
+                uncertainty_var[i] = self.uncertainty_energy_var
             else:
                 self.energy_mean()
                 mean_energies[i] = self.expected_energy
                 variances[i] = self.variance
+                uncertainty[i] = self.uncertainty_energy
+                uncertainty_var[i] = self.uncertainty_energy_var
 
         if save:
-            self.save_mean_energies(alphas, mean_energies, variances)
+            self.save_mean_energies(alphas, mean_energies, variances, uncertainty, uncertainty_var)
         if plot:
             self.plot_alpha_energy_dependence(alphas, mean_energies, variances)
                 
         return alphas, mean_energies, variances
     
-    def save_mean_energies(self, alphas, mean_energies, variances, name_of_file=None):
+    def save_mean_energies(self, alphas, mean_energies, variances, uncertainty_energy, uncertainty_energy_var,
+                           name_of_file=None):
         """
         Saves the lists of alphas, mean energies and their variances into a file in the style
         (alpha mean_energy variance)
@@ -293,8 +303,10 @@ class VQMC:
         :param alphas: (list of floats) List of variational parameters alpha.
         :param mean_energies: (list of floats) List of measured mean energies for given aplhas.
         :param variances: (list of floats) List of corresponding variances of mean energies.
+        :param uncertainty_energy: Var(E).
+        :param uncertainty_energy_var: Error estimate of Var(E).
         :param name_of_file: [optional, initial value = None](string or None) If string -> name of a file, if None generates automatic name of the file itself.
-        
+
         return: 0 if successful.´
 
         """
@@ -303,7 +315,8 @@ class VQMC:
             
         with open(name_of_file, "a") as file:
             for i in range(alphas.size):
-                file.write("%f %f %f\n" % (alphas[i], mean_energies[i], variances[i]))
+                file.write("%f %f %f %f %f\n" % (alphas[i], mean_energies[i], variances[i], uncertainty_energy[i],\
+                                                 uncertainty_energy_var[i]))
 
         return 0    
     
