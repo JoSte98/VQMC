@@ -59,7 +59,8 @@ class Optimizer:
                         (gradient11 - self.model.expected_energy * gradient12)
             
         elif self.gradient_method == "2nd derivative":
-            ### carefull, here so far done only for 1 parameter alpha!!!!! For Lithium must be changed!!! (g will be a vector and H will be a matrix)
+            ### carefull, here so far done only for 1 parameter alpha!!!!! For more cvariational parameters must be changed!!!
+            ### (g will be a vector and H will be a matrix)
             for walker in range(self.model.num_walkers):
                 for parameter in self.model.chains[walker]:
                     E_L = self.model.energy_L(parameter, self.model.alpha)

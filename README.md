@@ -42,8 +42,10 @@ switched on by setting 'gradient_method="2nd derivative"'.
 ## Main
 We now want to use the specified modules. Therefore, we go one by one through each model and perform the same 
 steps, seeking for the ground state of each of these models.
-First we plot the dependence of the expected energy on the variational parameter via 
+First we will initialize the VQMC models and then the minimum energy and corresponding paramerers shall be found by
+the minimizing algorithm. Thus we call Optimizer.find_optimum() after initializing the Optimazer module.
+After that we also plot the dependence of the expected energy on the variational parameter via 
 VQMC.alpha_energy_dependence(), in order to visualize the landscape in the variational parameter and the 
-minimum. This shall now be found by the minimizing algorithm. Thus we call Optimizer.find_optimum().
+minimum.
 
 ....
