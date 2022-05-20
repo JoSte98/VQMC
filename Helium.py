@@ -36,7 +36,7 @@ class Helium:
         :param parameters: (np.array [6x1]) 3d position of 2 electrons.
         :param alpha: (float) Variational parameter.
 
-        :return: Local energy at electron positions.
+        :return: Local energy E_L at electron positions.
         """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
@@ -67,7 +67,7 @@ class Helium:
         :param parameters: (np.array [6x1]) 3d position of 2 electrons.
         :param alpha: (float) Variational parameter.
 
-        :return: Value of d^2/(d alpha^2) log(trial) at electron positions (here: independent of alpha and r).
+        :return: Value of d^2/(d alpha^2) log(trial) at electron positions.
         """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
@@ -75,6 +75,14 @@ class Helium:
         return r12**3 / ((1+alpha*r12)**3)
     
     def local_derivative(self,parameters,alpha):
+        """
+        Calculates the value of the derivative of local energy E_L according to alpha.
+
+        :param parameters: (np.array [6x1]) 3d position of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of d/(d alpha) E_L at electron positions.
+        """
 
         position_1 = parameters[:3]
         position_2 = parameters[3:]
@@ -85,6 +93,14 @@ class Helium:
                 + 3/((1 + alpha*r12)**4) - r12/((1 + alpha*r12)**5)
                 
     def force(self, parameters, alpha):
+        """
+        Calculates the the Langevin force.
+
+        :param parameters: (np.array [6x1]) 3d position of 2 electrons.
+        :param alpha: (float) Variational parameter.
+
+        :return: Langevin force at electron positions.
+        """
         position_1 = parameters[:3]
         position_2 = parameters[3:]
         r_1 = np.linalg.norm(position_1)

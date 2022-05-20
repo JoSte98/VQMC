@@ -29,7 +29,7 @@ class LHO:
 
     def local(self, parameters, alpha):
         """
-        Local energy of LHO ansatz.
+        Local energy E_L of LHO ansatz.
 
         :param parameters: (np.array [1,]) 1d position of electron.
         :param alpha: (float) Variational parameter.
@@ -64,11 +64,27 @@ class LHO:
         return 0.0
     
     def local_derivative(self, parameters, alpha):
+        """
+        Calculates the value of the derivative of local energy E_L according to alpha.
+
+        :param parameters: (np.array [1,]) 1d position of electron.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of d/(d alpha) E_L at electron position.
+        """
         
         x = parameters[0]
         return -4 * x**2 * alpha
     
     def force(self, parameters, alpha):
+        """
+        Calculates the the Langevin force.
+
+        :param parameters: (np.array [1,]) 1d position of electron.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of the Langevin force at electron position.
+        """
         x = parameters[0]
         return -4 * x * alpha
         

@@ -29,7 +29,7 @@ class Hydrogen:
 
     def local(self, parameters, alpha):
         """
-        Local energy of Hydrogen ansatz.
+        Local energy E_L of Hydrogen ansatz.
 
         :param parameters: (np.array [3x1]) 3d position of electron.
         :param alpha: (float) Variational parameter.
@@ -64,10 +64,26 @@ class Hydrogen:
         return 0.0
     
     def local_derivative(self, parameters, alpha):
+        """
+        Calculates the value of the derivative of local energy E_L according to alpha.
+
+        :param parameters: (np.array [3x1]) 3d position of electron.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of d/(d alpha) E_L at electron position.
+        """
         r = np.linalg.norm(parameters)
         return - alpha + 1/r
     
     def force(self, parameters, alpha):
+        """
+        Calculates the the Langevin force.
+
+        :param parameters: (np.array [3x1]) 3d position of electron.
+        :param alpha: (float) Variational parameter.
+
+        :return: Value of the Langevin force at electron position.
+        """
         r = np.linalg.norm(parameters)
         return - parameters * alpha/r
 

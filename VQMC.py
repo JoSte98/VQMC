@@ -26,7 +26,7 @@ class VQMC:
             :param model: (string) Model (class) which Quantum Markov Chain is performed on,
              including local energy, trial func., etc.
             :param init_alpha: Variational parameter (float or np.array, depending on model)
-            :param Focker_Planck: (True/False) Option to use Focker-Planck equation inspired random walk.
+            :param Focker_Planck: (True/False) Option to use Focker-Planck diffusion equation inspired random walk.
         """
         self.model_name = model
         if model == "Helium":
@@ -50,6 +50,10 @@ class VQMC:
         self.Focker_Planck = Focker_Planck
         if self.Focker_Planck == True:
             self.force = model.force
+        else:
+            if self.Focker_Planck != False:
+                print("Wrong entry of the Focker_Planck parameter! Only 'True' or 'False' are allowed.")
+                exit(1)
 
         if init_alpha is not None:
             self.alpha = init_alpha
@@ -122,11 +126,13 @@ class VQMC:
 
         :param old_state: Old state of the walker.
         :param old_psi_squared: Corresponding squared trial function value for the old state.
+        :param old_force: None in case of the normal random walk, an old Languir force of the walker for the case of the Focker-Planck approach.
             
         return: Current location of the walker and corresponding squared trial function value.
         """
         
         self.num_tried += 1
+        
         if self.Focker_Planck==False:
             displacement = (2*np.random.rand(self.dimension) - 1)*self.max_step_length
             new_state = old_state + displacement
@@ -261,6 +267,7 @@ class VQMC:
             
         return: Lists of variational parameters alpha, mean energies and their variances.
         """
+        
         if start == None:
             alpha_start = self.alpha
         else:
@@ -307,7 +314,7 @@ class VQMC:
         :param uncertainty_energy_var: Error estimate of Var(E).
         :param name_of_file: [optional, initial value = None](string or None) If string -> name of a file, if None generates automatic name of the file itself.
 
-        return: 0 if successful.´
+        return: 0 if successful.
 
         """
         if name_of_file==None:
