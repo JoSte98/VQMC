@@ -104,7 +104,7 @@ class Optimizer:
 
         self.alphas.append(new_alpha)
 
-        #Reinitialize the model
+        #Reinitialize the model with the new alpha parameters
         self.model.reinitialize(new_alpha)
 
         return 0
@@ -129,6 +129,7 @@ class Optimizer:
             
         self.min_E = min(self.energies)
         self.min_alpha = self.alphas[self.energies.index(self.min_E)]
+        self.min_variance = self.variance[self.energies.index(self.min_E)]
         
         if save:
             self.save_mean_energies()
