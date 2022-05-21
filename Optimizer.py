@@ -14,11 +14,11 @@ class Optimizer:
             Constructor for the Optimization class for the Variational Quantum Markov Chain.
 
             :param model: Variational Quantum Markov Chain class (initialized).
-            :param steplength: (float) Step length of the gradient descent method.
-            :param max_steps: (int) Maximum of minimization steps to take.
-            :param criterion: (float) Criterion for stopping minimization procedure. If new and old alpha differ less
+            :param steplength: [Optional, initial value = 0.3](float) Step length of the gradient descent method.
+            :param max_steps: [Optional, initial value = 50](int) Maximum of minimization steps to take.
+            :param criterion: [Optional, initial value = 1e-6](float) Criterion for stopping minimization procedure. If new and old alpha differ less
              than criterion => stop.
-            :param gradient_method: {"1st derivative", "2nd derivative"} Choose between minimization methods (normal
+            :param gradient_method: [Optional, initial value = "1st derivative"]{"1st derivative", "2nd derivative"} Choose between minimization methods (normal
              gradient descent and minimization taking the 2nd derivative into account).
         """
         self.steplength = steplength
@@ -89,7 +89,7 @@ class Optimizer:
         Updates the current value of the variational parameter alpha, taking into account the method and
         the gradient.
 
-        :return; 0 of successful.
+        :return: 0 of successful.
         """
         self.model.energy_mean()
         self.energies.append(self.model.expected_energy)
@@ -114,8 +114,8 @@ class Optimizer:
         """
         Finds the optimal value of the variational parameter for the model.
 
-        :param save: (boolean) Enables saving the alpha-energy history of the minimization procedure.
-        :param plot: (boolean) Enables plotting the alpha-energy history of the minimization procedure.
+        :param save: [Optional, default = True] (boolean) Enables saving the alpha-energy history of the minimization procedure.
+        :param plot: [Optional, default = True] (boolean) Enables plotting the alpha-energy history of the minimization procedure.
 
         :return: 0 if successful.
         """
@@ -160,7 +160,7 @@ class Optimizer:
         """
         Load the alphas, energies and variances out of file.
 
-        :param name_of_file: Name of the file.
+        :param name_of_file: (string) Name of the file.
 
         :returns:
          - alphas - (list of floats) List of variational parameters.
