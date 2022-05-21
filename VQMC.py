@@ -260,9 +260,9 @@ class VQMC:
         :param steps: (float) Number of alphas in the interval [start,stop] for which measurement of energy will be done.
         :param start: [optional, initial value = None] (float or None) Start value of alphas, if None -> takes start
          value as current alpha of the model, otherwise takes given start value.
-        :param save: [optional, initial value = True](True/False) Allows saving of the measured alpha-energy dependence
+        :param save: [Optional, initial value = True](True/False) Allows saving of the measured alpha-energy dependence
          to a file if True.
-        :param plot: [optional, initial value = True](True/False) Allows plotting of the measured alpha-energy
+        :param plot: [Optional, initial value = True](True/False) Allows plotting of the measured alpha-energy
          dependence if True.
             
         return: Lists of variational parameters alpha, mean energies and their variances.
@@ -312,7 +312,7 @@ class VQMC:
         :param variances: (list of floats) List of corresponding variances of mean energies.
         :param uncertainty_energy: (list of floats) Variance of the local energy.
         :param uncertainty_energy_var: (list of floats) Error estimate of the variance of the local energy.
-        :param name_of_file: [optional, initial value = None](string or None) If string -> name of a file, if None
+        :param name_of_file: [Optional, initial value = None](string or None) If string -> name of a file, if None
          generates automatic name of the file itself.
 
         return: 0 if successful.

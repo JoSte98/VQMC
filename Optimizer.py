@@ -114,8 +114,8 @@ class Optimizer:
         """
         Finds the optimal value of the variational parameter for the model.
 
-        :param save: [Optional, default = True] (boolean) Enables saving the alpha-energy history of the minimization procedure.
-        :param plot: [Optional, default = True] (boolean) Enables plotting the alpha-energy history of the minimization procedure.
+        :param save: [Optional, initial value = True] (boolean) Enables saving the alpha-energy history of the minimization procedure.
+        :param plot: [Optional, initial value = True] (boolean) Enables plotting the alpha-energy history of the minimization procedure.
 
         :return: 0 if successful.
         """
@@ -130,7 +130,7 @@ class Optimizer:
             
         self.min_E = min(self.energies)
         self.min_alpha = self.alphas[self.energies.index(self.min_E)]
-        self.min_variance = self.variance[self.energies.index(self.min_E)]
+        self.min_variance = self.variances[self.energies.index(self.min_E)]
         
         if save:
             self.save_mean_energies()
@@ -143,7 +143,7 @@ class Optimizer:
         """
         Saves all alphas and the corresponding energies of the Markov chain as well as the variance in file.
 
-        :param name_of_file: [optional, default: None] Name of the file (default will save file under model name).
+        :param name_of_file: [optional, initial value = None] Name of the file (default will save file under model name).
 
         :return: 0 if successful.
         """
@@ -195,10 +195,11 @@ class Optimizer:
         fig, ax = plt.subplots()
 
         ax.errorbar(range(len(alphas[:-1])), energies, yerr=np.sqrt(variances), fmt='ro', label="Measurement")
+        
+        ralphas = [round(num, 6) for num in alphas[:-1]]
+        ax.set_xticks(range(len(alphas[:-1])), ralphas,rotation = 75)
 
-        ax.set_xticks(range(len(alphas[:-1])), alphas[:-1])
-
-        ax.set_xlabel(r"Steps", fontsize=18)
+        ax.set_xlabel(r"Steps and corresponding alphas", fontsize=18)
         ax.set_ylabel(r"Energy", fontsize=18)
 
         ax.legend(loc="best", fontsize=16)
