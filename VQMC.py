@@ -19,14 +19,15 @@ class VQMC:
         """
             Constructor of Variational Quantum Markov Chain class.
 
-            :param num_walkers: (int) Number of individual walkers in Markov Chain.
-            :param max_step_length: (float) Maximal step length a walker can take in each dimension.
-            :param num_steps_equilibrate: (int) Number of Markov steps to take for equilibration.
-            :param MC_num_steps: (int) Number of Markov steps to take after equilibration to construct measurements.
-            :param model: (string) Model (class) which Quantum Markov Chain is performed on,
+            :param num_walkers: [Optional, initial value = 400] (int) Number of individual walkers in Markov Chain.
+            :param max_step_length: [Optional, initial value = 0.6] (float) Maximal step length a walker can take in each dimension.
+            :param num_steps_equilibrate: [Optional, initial value = 4000] (int) Number of Markov steps to take for equilibration.
+            :param MC_num_steps: [Optional, initial value = 10000] (int) Number of Markov steps to take after equilibration to construct measurements.
+            :param model: [Optional, initial value = "Helium"] (string) Model (class) which Quantum Markov Chain is performed on,
              including local energy, trial func., etc.
-            :param init_alpha: Variational parameter (float or np.array, depending on model)
-            :param Focker_Planck: (True/False) Option to use Focker-Planck diffusion equation inspired random walk.
+            :param init_alpha: [Optional, initial value = None] Variational parameter (float or np.array, depending on model). In case of 'None'
+            the value is set drawn from the model set-up.
+            :param Focker_Planck: [Optional, initial value = False] (True/False) Option to use Focker-Planck diffusion equation inspired random walk if True.
         """
         self.model_name = model
         if model == "Helium":
@@ -124,11 +125,11 @@ class VQMC:
         Proposes a new position of the walker and based on Metropolis algorithm either accepts and jumps or stays at the
         original location.
 
-        :param old_state: Old state of the walker.
-        :param old_psi_squared: Corresponding squared trial function value for the old state.
-        :param old_force: None in case of the normal random walk, an old Languir force of the walker for the case of the Focker-Planck approach.
+        :param old_state: (np.array) Old state of the walker.
+        :param old_psi_squared: (np.array) Corresponding squared trial function value for the old state.
+        :param old_force: [Optional, initial value = None] (np.array) None in case of the normal random walk, an old Languir force of the walker for the case of the Focker-Planck approach.
             
-        return: Current location of the walker and corresponding squared trial function value.
+        return: Current location of the walker and corresponding squared trial function value. In case of Focker-Planck approach also new Languir force.
         """
         
         self.num_tried += 1
@@ -331,7 +332,7 @@ class VQMC:
         """
         Loads lists of alphas, energies and variances stored in a file.
         
-        :param name_of_file: Name of the file.
+        :param name_of_file: (string) Name of the file.
         
         return: Lists of variational parameters alpha, mean energies and their variances.
         """
