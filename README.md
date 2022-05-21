@@ -47,5 +47,3 @@ the minimizing algorithm. Thus we call Optimizer.find_optimum() after initializi
 After that we also plot the dependence of the expected energy on the variational parameter via 
 VQMC.alpha_energy_dependence(), in order to visualize the landscape in the variational parameter and the 
 minimum.
-
-....

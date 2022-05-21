@@ -174,7 +174,6 @@ class VQMC:
                     return new_state, new_psi_squared, new_force
                 else:
                     return old_state, old_psi_squared, old_force
-            
 
     def MC_step(self):
         """
@@ -182,7 +181,7 @@ class VQMC:
         
         return: 0 if successful.
         """
-        if self.Focker_Planck==False:
+        if self.Focker_Planck == False:
             for walker in range(self.num_walkers):
                 new_state, self.old_psi_squared[walker] = \
                     self.single_walker_step(self.chains[walker][-1], self.old_psi_squared[walker])
@@ -304,15 +303,16 @@ class VQMC:
     def save_mean_energies(self, alphas, mean_energies, variances, uncertainty_energy, uncertainty_energy_var,
                            name_of_file=None):
         """
-        Saves the lists of alphas, mean energies and their variances into a file in the style
-        (alpha mean_energy variance)
+        Saves the lists of alphas, mean energies  and the variances of the local energy and their error estimates
+        into a file in the style (alpha mean_energy error_mean var error_var).
         
         :param alphas: (list of floats) List of variational parameters alpha.
         :param mean_energies: (list of floats) List of measured mean energies for given aplhas.
         :param variances: (list of floats) List of corresponding variances of mean energies.
-        :param uncertainty_energy: Var(E).
-        :param uncertainty_energy_var: Error estimate of Var(E).
-        :param name_of_file: [optional, initial value = None](string or None) If string -> name of a file, if None generates automatic name of the file itself.
+        :param uncertainty_energy: (list of floats) Variance of the local energy.
+        :param uncertainty_energy_var: (list of floats) Error estimate of the variance of the local energy.
+        :param name_of_file: [optional, initial value = None](string or None) If string -> name of a file, if None
+         generates automatic name of the file itself.
 
         return: 0 if successful.
 
@@ -327,7 +327,7 @@ class VQMC:
 
         return 0    
     
-    def load_mean_energies(self,name_of_file):
+    def load_mean_energies(self, name_of_file):
         """
         Loads lists of alphas, energies and variances stored in a file.
         
